@@ -57,7 +57,8 @@ namespace MsgKit
         /// </summary>
         /// <param name="emlFile">The EML (MIME) input stream</param>
         /// <param name="msgFile">The MSG file output stream</param>
-        public static void ConvertEmlToMsg(Stream emlFile, Stream msgFile)
+        public static void ConvertEmlToMsg(Stream emlFile, Stream msgFile, 
+            bool ignoreInlineAttachmentsWithNoContentId = false)
         {
             var eml = MimeMessage.Load(emlFile);
             var sender = new Sender(string.Empty, string.Empty);
@@ -191,6 +192,9 @@ namespace MsgKit
                 var inline = bodyPart.ContentDisposition != null &&
                     bodyPart.ContentDisposition.Disposition.Equals("inline",
                         StringComparison.InvariantCultureIgnoreCase);
+
+                if (ignoreInlineAttachmentsWithNoContentId && inline && string.IsNullOrWhiteSpace(bodyPart.ContentId))
+                    continue;
 
                 attachmentStream.Position = 0;
                 msg.Attachments.Add(attachmentStream, fileName, -1, inline, bodyPart.ContentId);
