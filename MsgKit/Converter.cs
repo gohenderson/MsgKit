@@ -58,9 +58,20 @@ namespace MsgKit
         /// <param name="emlFile">The EML (MIME) input stream</param>
         /// <param name="msgFile">The MSG file output stream</param>
         public static void ConvertEmlToMsg(Stream emlFile, Stream msgFile, 
-            bool ignoreInlineAttachmentsWithNoContentId = false)
+        bool ignoreInlineAttachmentsWithNoContentId = false)
         {
             var eml = MimeMessage.Load(emlFile);
+            ConvertEmlToMsg(eml, msgFile, ignoreInlineAttachmentsWithNoContentId);
+        }
+
+        /// <summary>
+        ///     Converts an EML file to MSG format
+        /// </summary>
+        /// <param name="eml">The EML (MIME) MimeMessage</param>
+        /// <param name="msgFile">The MSG file output stream</param>
+        public static void ConvertEmlToMsg(MimeMessage eml, Stream msgFile,
+            bool ignoreInlineAttachmentsWithNoContentId = false)
+        {
             var sender = new Sender(string.Empty, string.Empty);
 
             if (eml.From.Count > 0)
@@ -113,18 +124,27 @@ namespace MsgKit
 
             foreach (var to in eml.To)
             {
+                if (typeof(GroupAddress) == to.GetType() && ((GroupAddress)to).Name == "undisclosed-recipients")
+                    return;
+
                 var mailAddress = (MailboxAddress)to;
                 msg.Recipients.AddTo(mailAddress.Address, mailAddress.Name);
             }
 
             foreach (var cc in eml.Cc)
             {
+                if (typeof(GroupAddress) == cc.GetType() && ((GroupAddress)cc).Name == "undisclosed-recipients")
+                    return;
+
                 var mailAddress = (MailboxAddress)cc;
                 msg.Recipients.AddCc(mailAddress.Address, mailAddress.Name);
             }
 
             foreach (var bcc in eml.Bcc)
             {
+                if (typeof(GroupAddress) == bcc.GetType() && ((GroupAddress)bcc).Name == "undisclosed-recipients")
+                    return;
+
                 var mailAddress = (MailboxAddress)bcc;
                 msg.Recipients.AddBcc(mailAddress.Address, mailAddress.Name);
             }
