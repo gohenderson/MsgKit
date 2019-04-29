@@ -124,7 +124,7 @@ namespace MsgKit
 
             foreach (var to in eml.To)
             {
-                if (typeof(GroupAddress) == to.GetType() && ((GroupAddress)to).Name == "undisclosed-recipients")
+                if (typeof(GroupAddress) == to.GetType() && IsToUndisclosedRecipients((GroupAddress)to))
                     return;
 
                 var mailAddress = (MailboxAddress)to;
@@ -133,7 +133,7 @@ namespace MsgKit
 
             foreach (var cc in eml.Cc)
             {
-                if (typeof(GroupAddress) == cc.GetType() && ((GroupAddress)cc).Name == "undisclosed-recipients")
+                if (typeof(GroupAddress) == cc.GetType() && IsToUndisclosedRecipients((GroupAddress)cc))
                     return;
 
                 var mailAddress = (MailboxAddress)cc;
@@ -142,7 +142,7 @@ namespace MsgKit
 
             foreach (var bcc in eml.Bcc)
             {
-                if (typeof(GroupAddress) == bcc.GetType() && ((GroupAddress)bcc).Name == "undisclosed-recipients")
+                if (typeof(GroupAddress) == bcc.GetType() && IsToUndisclosedRecipients((GroupAddress)bcc))
                     return;
 
                 var mailAddress = (MailboxAddress)bcc;
@@ -236,5 +236,10 @@ namespace MsgKit
             throw new NotImplementedException("Not yet done");
         }
         #endregion
+
+        private static bool IsToUndisclosedRecipients(GroupAddress address)
+        {
+            return (address.Name ?? "").ToLower().Replace(" ", "").Replace("-", "") == "undisclosedrecipients";
+        }
     }
 }
